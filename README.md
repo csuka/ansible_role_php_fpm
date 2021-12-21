@@ -1,6 +1,3 @@
-[![pipeline status](https://gitlab.com/kevin-ansible-roles/php-fpm/badges/master/pipeline.svg)](https://gitlab.com/kevin-ansible-roles/php-fpm/-/commits/master)
-
-
 # Ansible Role: PHP-FPM
 
 An Ansible Role that installs PHP 8.x on RHEL/CentOS/OL 8.
