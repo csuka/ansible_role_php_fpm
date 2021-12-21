@@ -1,0 +1,77 @@
+---
+- name: stat if pear executable is found
+  stat:
+    path: /usr/bin/pear
+  register: php_pear_check
+
+- block:
+
+    - name: ensure expect and wget are present, for non-interactive installation
+      dnf:
+        name: "{{ item }}"
+      loop:
+        - wget
+        - expect
+
+    - name: copy installation file
+      template:
+        src: pear_install.sh
+        dest: /root/
+        mode: '0775'
+
+    # the installation file is deleted after execution
+    - name: execute installation
+      shell: /root/pear_install.sh
+
+    - name: stat if pear_old exists
+      stat:
+        path: /usr/bin/pear_old
+      register: php_pear_old
+
+    - name: hard link pear_old to pear when it exists
+      file:
+        src: /usr/bin/pear_old
+        dest: /usr/bin/pear
+        state: hard
+        owner: root
+        group: root
+        mode: '0775'
+      when: php_pear_old.stat.exists
+
+    - name: update pecl channels
+      shell: pear channel-update pecl.php.net
+
+    - name: ensure pecl tmp dir exists
+      file:
+        path: "{{ php_pear_tmp_dir }}"
+        state: directory
+        mode: '0770'
+        owner: root
+        group: root
+
+    - name: set pecl temp dir
+      shell: "pear config-set temp_dir {{ php_pear_tmp_dir }}"
+
+  when: not php_pear_check.stat.exists or php_pear_update
+
+# improvement: check if modules are already installed,
+# if so, skip module install for next task
+
+- name: ensure php-pecl modules are installed via pear
+  pear:
+    name: "{{ item.key }}"
+    state: "{{ item.value.state }}"
+    prompts: "{{ item.value.prompts | default(omit) }}"
+  with_dict: "{{ php_pear_modules }}"
+
+- name: ensure the modules are enabled
+  lineinfile:
+    create: true
+    path: /etc/php.d/pear-extensions.ini
+    line: "extension={{ item.key | regex_replace('-.*$', '') }}.so"
+    mode: '0775'
+    owner: root
+    group: root
+  with_dict: "{{ php_pear_modules | replace('pecl/', '') |
+    replace ('lib', '') }}"
+  notify: reload php-fpm

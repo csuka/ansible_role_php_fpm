@@ -1,0 +1,112 @@
+---
+php_version: 7.4
+
+php_fpm_dependencies: []
+php_default_modules:
+  - bcmath
+  - cli
+  - common
+  - devel
+  - fpm
+  - gd
+  - intl
+  - json
+  - mbstring
+  - mcrypt  # automatically dropped in v7.2 or higher
+  - mysqlnd
+  - opcache
+  - pdo
+  - process
+  - soap
+  - xml
+  - xmlrpc
+  # - libsodium has to be installed via pear, see readme
+
+php_additional_modules: []
+php_modules: "{{ php_default_modules }} + {{ php_additional_modules }}"
+
+php_pear: false
+php_pear_modules: {}
+php_pear_update: false
+php_pear_update_modules: false
+php_pear_tmp_dir: /root/.pecl_tmp  # the tmp dir has to be executable
+
+php_composer: false
+php_composer_update: false
+
+php_fpm_sys_owner: php-fpm
+php_fpm_sys_group: php-fpm
+
+php_fpm_pool: www-data
+
+php_fpm_user: "{{ php_fpm_pool }}"
+php_fpm_group: "{{ php_fpm_pool }}"
+php_fpm_listen_owner: "{{ php_fpm_user }}"
+php_fpm_listen_group: "{{ php_fpm_group }}"
+php_fpm_socket: /var/run/php-fpm/{{ php_fpm_pool }}.sock
+
+php_fpm_listen_host: 127.0.0.1
+php_fpm_listen_mode: '0660'
+
+php_fpm_mb_per_thread: 196
+php_fpm_memory_percentage: 100
+
+php_fpm_pm: static
+php_fpm_pm_max_children:
+  "{{ (php_fpm_memory_percentage / 100 * ansible_memtotal_mb /
+  php_fpm_mb_per_thread) | int }}"
+php_fpm_pm_max_requests: 5000
+php_fpm_pm_idle_timeout: 20s
+php_fpm_status_path: /php-status
+php_fpm_ping_path: /ping
+php_fpm_catch_workers_output: "yes"
+
+php_fpm_log_dir: /var/log/php-fpm
+php_fpm_slowlog: "{{ php_fpm_log_dir }}/{{ php_fpm_pool }}-slow.log"
+php_fpm_errorlog: "{{ php_fpm_log_dir }}/{{ php_fpm_pool }}-error.log"
+php_fpm_logrotate: |
+  daily
+  missingok
+  rotate 14
+  compress
+  delaycompress
+  notifempty
+  create
+  dateext
+  sharedscripts
+  postrotate
+    /bin/kill -SIGUSR1 `cat /run/php-fpm/php-fpm.pid 2>/dev/null` \
+    2>/dev/null || true
+  endscript
+
+php_fpm_default_ini:
+  php_flag[display_errors]: "off"
+  php_admin_flag[log_errors]: "on"
+  php_admin_value[error_log]: "{{ php_fpm_errorlog }}"
+  php_admin_value[memory_limit]: 768M
+  php_admin_value[max_execution_time]: "3600"
+php_fpm_additional_ini: {}
+php_fpm_ini: "{{ php_fpm_default_ini | combine(php_fpm_additional_ini) }}"
+
+php_fpm_global_default_ini:
+  PHP:
+    memory_limit: 2048M
+    post_max_size: 25M
+    upload_max_filesize: 25M
+    max_input_vars: 10000
+  Session:
+    session.auto_start: "Off"
+php_fpm_global_additional_ini: {}
+php_fpm_global_ini: "{{ php_fpm_global_default_ini |
+  combine(php_fpm_global_additional_ini) }}"
+
+php_ext_opcache:
+  enable: true
+  enable_cli: false
+  memory_consumption: 512
+  interned_strings_buffer: 64
+  max_accelerated_files: 65407
+  validate_timestamps: true
+  revalidate_freq: 2
+  save_comments: 1
+  blacklist_filename: '/etc/php.d/opcache*.blacklist'

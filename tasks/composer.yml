@@ -1,0 +1,18 @@
+---
+- name: composer | stat if is installed
+  stat:
+    path: /root/.config/composer
+  register: composer_check
+
+- block:
+
+    - name: composer | place installation file
+      template:
+        src: composer.sh.j2
+        dest: /root/install_composer.sh
+        mode: '0775'
+
+    - name: composer | install
+      shell: /root/install_composer.sh
+
+  when: not composer_check.stat.exists or php_composer_update

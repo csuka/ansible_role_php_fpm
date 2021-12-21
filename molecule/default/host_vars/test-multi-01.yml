@@ -1,0 +1,15 @@
+---
+php_pear: true
+php_pear_modules:
+  pecl/memcache-4.0.5.2:
+    state: present
+  pecl/libsodium:
+    state: present
+
+php_composer: true
+
+php_fpm_global_additional_ini:
+  Date:
+    date.timezone: Europe/Amsterdam
+php_fpm_global_ini: "{{ php_fpm_global_default_ini |
+  combine(php_fpm_global_additional_ini) }}"

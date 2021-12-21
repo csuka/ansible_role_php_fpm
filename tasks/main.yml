@@ -1,0 +1,102 @@
+---
+- name: ensure php group is set
+  group:
+    name: "{{ php_fpm_group }}"
+    gid: 82
+    system: true
+
+- name: ensure php user is set
+  user:
+    name: "{{ php_fpm_user }}"
+    uid: 82
+    system: true
+    group: "{{ php_fpm_group }}"
+    comment: 'php-fpm user'
+    create_home: false
+    shell: /sbin/nologin
+
+- name: drop mcrypt module when deploying 7.2 or later versions
+  set_fact:
+    php_default_modules: "{{ php_default_modules | difference(['mcrypt']) }}"
+  when: php_version >= 7.2
+
+- name: install php dependencies when set
+  dnf:
+    name: "{{ php_fpm_dependencies }}"
+  when: php_fpm_dependencies | length > 0
+
+- name: ensure php and its related packages are installed
+  dnf:
+    name: "@php:{{ php_version }}"
+
+- name: ensure php modules are installed
+  dnf:
+    name: "php-{{ item }}"
+  loop: "{{ php_modules }}"
+
+- name: include php pear installation when set
+  include: php-pear.yml
+  when: php_pear | bool
+
+- name: configure php.ini
+  ini_file:
+    dest: /etc/php.ini
+    section: "{{ item.section }}"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    mode: '0664'
+  loop: >-
+    [ {% for section, subdict in php_fpm_global_ini.items() %}
+      {% for key, value in subdict.items() %}
+        {'section': '{{ section }}',
+         'key': '{{ key }}',
+         'value': '{{ value }}'}
+        {% if not loop.last %}
+          ,
+        {% endif %}
+      {% endfor %}
+      {% if not loop.last %}
+        ,
+      {% endif %}
+    {% endfor %} ]
+  notify: restart php-fpm
+
+- name: configure php.d/10-opcache.ini
+  template:
+    src: php.d/10-opcache.ini.j2
+    dest: /etc/php.d/10-opcache.ini
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart php-fpm
+
+- name: clear default pool
+  template:
+    src: www.conf
+    dest: /etc/php-fpm.d/www.conf
+    owner: root
+    group: root
+    mode: '0600'
+  notify: reload php-fpm
+
+- name: template php-fpm pool config
+  template:
+    src: pool.conf
+    dest: "/etc/php-fpm.d/{{ php_fpm_pool }}.conf"
+    owner: root
+    group: root
+    mode: '0600'
+  notify: reload php-fpm
+
+- name: include composer
+  include: composer.yml
+  when: php_composer
+
+- name: include php-logs
+  include: logs.yml
+
+- name: ensure php-fpm is started and enabled
+  service:
+    name: php-fpm
+    state: started
+    enabled: true

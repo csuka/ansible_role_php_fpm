@@ -1,0 +1,5 @@
+{{ ansible_managed }}
+
+/var/log/php-fpm/*.log {
+  {{ php_fpm_logrotate | replace('\n', '\n  ') }}
+}
