@@ -1,6 +1,6 @@
 # Ansible Role: PHP-FPM
 
-An Ansible Role that installs PHP 8.x on EL 8.
+An Ansible Role that installs PHP 7.x on EL 8.
 
  * 1.0.0 initial release
  * 1.0.1 rewrite naming for php_pear checking
@@ -37,7 +37,6 @@ php-IDNA_Convert.noarch : Provides conversion of internationalized strings to UT
 php-adodb.noarch : Database abstraction layer for PHP
 php-bcmath.x86_64 : A module for PHP applications for using the bcmath library
 php-cli.x86_64 : Command-line interface for PHP
-...
 <snip>
 ```
 
@@ -50,6 +49,8 @@ php_additional_modules:
 
 Install php dependencies with:
 ```yaml
+# this also requires the epel-repo to be installed
+# this is done in molecule
 php_fpm_dependencies:
   - libzip-devel
   - make
@@ -60,7 +61,9 @@ php_fpm_dependencies:
 Some values are calculated based on machine settings:
 
 ```yaml
-php_fpm_pm_max_children: "{{ (php_fpm_memory_percentage / 100 * ansible_memtotal_mb / php_fpm_mb_per_thread) | int }}"
+php_fpm_pm_max_children: >-
+  {{ (php_fpm_memory_percentage / 100 * ansible_memtotal_mb /
+  php_fpm_mb_per_thread) | int }}
 ```
 
 Set additional values for in php-fpm pool .ini file. Set additional values for /etc/php.ini.
@@ -108,6 +111,14 @@ php_pear: true
 
 The php-pear package, provided from the repo's, didn't work. So I've chosen to install php-pear via the official method. To automate the installation, the package `expect` is installed and used.
 
+It seems that as of now, pear forgot to update their CA of some kind.
+```bash
+ERROR: The certificate of 'pear.php.net' is not trusted
+```
+
+Therefore, pear is installed via wget using the option: `--no-check-certificate`.
+One can follow [the online thread here](https://bugs.php.net/bug.php?id=81078)
+
 The packages are automatically enabled in php. php is reloaded after a package is placed.
 
 Install or update pear packages with:
@@ -118,8 +129,6 @@ php_pear_modules:
     state: latest
     prompts:
       - (.*)Enable internal debugging in APCu \[no\]: "yes"
-  pecl/memcache-4.0.5.2:
-    state: present
   pecl/libsodium:
     state: latest
 ```
@@ -132,11 +141,13 @@ php_pear_update: true
 
 Note that a pear package could require several system packages. This should be tested beforehand, the required system packages should be added via the `php_fpm_dependencies` variable.
 
-The temp directory for PHP pear has to be writeable, in some cases `/tmp` is not writeable. Set this with. Ansible creates the folder and sets its permissions for it.
+The temp directory for PHP pear has to be writeable, in some cases `/tmp` is not writeable. Set this with the following:
 
 ```yaml
 php_pear_tmp_dir: /root/.pecl_tmp
 ```
+
+Ansible creates the folder and sets permissions.
 
 ## Logrotate
 

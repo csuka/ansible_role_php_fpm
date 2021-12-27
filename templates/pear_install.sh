@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-spawn wget -O /root/go-pear.phar http://pear.php.net/go-pear.phar
+spawn wget -O /root/go-pear.phar http://pear.php.net/go-pear.phar --no-check-certificate
 expect eof
 
 sleep 1

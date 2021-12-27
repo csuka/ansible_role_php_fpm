@@ -4,11 +4,8 @@
   roles:
     - ../php-fpm
   pre_tasks:
-    - name: ensure sodium dependencies are installed
+    - name: ensure epel repo is set for libsodium dependencies
       dnf:
         name: "{{ item }}"
       loop:
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-        - make
-        - libsodium
-        - libsodium-devel
