@@ -1,6 +1,6 @@
 # Ansible Role: PHP-FPM
 
-An Ansible Role that installs PHP 8.x on RHEL/CentOS/OL 8.
+An Ansible Role that installs PHP 8.x on EL 8.
 
  * 1.0.0 initial release
  * 1.0.1 rewrite naming for php_pear checking

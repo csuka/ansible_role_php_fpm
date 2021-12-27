@@ -89,11 +89,11 @@
   notify: reload php-fpm
 
 - name: include composer
-  include: composer.yml
+  include_tasks: composer.yml
   when: php_composer
 
 - name: include php-logs
-  include: logs.yml
+  include_tasks: logs.yml
 
 - name: ensure php-fpm is started and enabled
   service:
