@@ -7,8 +7,6 @@ php_fpm_dependencies:
 
 php_pear: true
 php_pear_modules:
-  pecl/memcache:
-    state: present
   pecl/libsodium:
     state: present
 
