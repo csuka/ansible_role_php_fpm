@@ -35,7 +35,7 @@
   loop: "{{ php_modules }}"
 
 - name: include php pear installation when set
-  include: php-pear.yml
+  include_tasks: php-pear.yml
   when: php_pear | bool
 
 - name: configure php.ini

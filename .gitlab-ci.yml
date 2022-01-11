@@ -33,7 +33,7 @@ molecule:
     - python3 -m pip install "molecule[docker]"
     - ansible --version
     - molecule --version
-    - molecule test -s default
+    - molecule test -s default  # single
   except:
     changes:
       - README.md
