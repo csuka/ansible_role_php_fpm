@@ -4,6 +4,18 @@
   roles:
     - ../php-fpm
   pre_tasks:
+    - name: copy epel gpg key
+      copy:
+        path: RPM-GPG-KEY-EPEL-8
+        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+        mode: '0400'
+        owner: root
+        group: root
+
+    - name: import epel gpg key
+      rpm_key:
+        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+
     - name: ensure epel repo is set for libsodium dependencies
       dnf:
         name: "{{ epel_repo }}"
