@@ -3,7 +3,7 @@ galaxy_info:
   author: Kevin Csuka
   description: Ansible role to setup and configure PHP-FPM
   namespace: kcsuka
-  role_name: apache
+  role_name: php-fpm
   license: Apache License, Version 2.0
   min_ansible_version: 2.9
   platforms:

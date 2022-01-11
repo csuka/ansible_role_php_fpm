@@ -88,11 +88,11 @@
     mode: '0600'
   notify: reload php-fpm
 
-- name: include composer
+- name: include composer when set
   include_tasks: composer.yml
   when: php_composer
 
-- name: include php-logs
+- name: include logs
   include_tasks: logs.yml
 
 - name: ensure php-fpm is started and enabled

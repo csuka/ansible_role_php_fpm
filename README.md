@@ -1,15 +1,6 @@
-# Ansible Role: PHP-FPM
+# PHP-FPM
 
-An Ansible Role that installs PHP 7.x on EL 8.
-
- * 1.0.0 initial release
- * 1.0.1 rewrite naming for php_pear checking
- * 1.0.2 add apache as user to read the socket
- * 1.1.0 ensure key/values are properly added to /etc/php.ini
- * 1.1.1 have composer update value and has its own playbook
- * 1.1.2 improve permissions for socket and php-fpm user
- * 1.1.3 improve logrotate file
- * 1.2.0 improved installation method, added molecule testing
+An Ansible role that installs, configures and manages PHP-FPM for EL 8.
 
 ## Good 2 know
 

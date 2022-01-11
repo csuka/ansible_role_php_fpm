@@ -6,6 +6,4 @@
   pre_tasks:
     - name: ensure epel repo is set for libsodium dependencies
       dnf:
-        name: "{{ item }}"
-      loop:
-        - https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        name: "{{ epel_repo }}"
